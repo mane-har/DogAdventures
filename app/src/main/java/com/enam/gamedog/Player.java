@@ -8,85 +8,95 @@ import android.graphics.RectF;
 public class Player {
     private float x, y;
     private float velocityY;
-    private float gravity;
-    private float jumpForce;
-    private boolean isJumping;
-    private float speed;
-    private float screenX, screenY;
-    private GameResources resources;
-    private int frameIndex;
-    private long lastFrameTime;
-    private int frameDelay;
-    private RectF collisionBox;
+    private float gravity = 0.4f;    // Reduced gravity for longer jump duration
+    private float jumpForce = -17f;  // Keep same jump force for same height
+    private boolean isJumping = false;
+    private int screenX, screenY;
+    private Bitmap idleSprite;
+    private Bitmap jumpSprite;
+    private int frameWidth;
+    private int frameHeight;
+    private int currentFrame = 0;
+    private long lastFrameTime = 0;
+    private static final int FRAME_DELAY = 100; // milliseconds between frames
+    private static final int IDLE_FRAMES = 4;
+    private static final int JUMP_FRAMES = 6;
 
-    public Player(float screenX, float screenY, GameResources resources) {
+    public Player(int screenX, int screenY, GameResources resources) {
         this.screenX = screenX;
         this.screenY = screenY;
-        this.resources = resources;
-        reset();
-    }
-
-    public void reset() {
-        x = screenX * 0.2f;
-        y = screenY * 0.8f;
-        velocityY = 0;
-        gravity = 0.8f;
-        jumpForce = -20f;
-        isJumping = false;
-        speed = 5f;
-        frameIndex = 0;
-        lastFrameTime = System.currentTimeMillis();
-        frameDelay = 100; // Faster animation
-        collisionBox = new RectF();
-        updateCollisionBox();
+        
+        // Load sprites
+        idleSprite = resources.getDogIdleSprite();
+        jumpSprite = resources.getDogJumpSprite();
+        
+        // Calculate frame dimensions for idle sprite (both sprites should have same frame height)
+        frameWidth = idleSprite.getWidth() / IDLE_FRAMES;
+        frameHeight = idleSprite.getHeight();
+        
+        // Set initial position - place dog just above the ground at the bottom
+        x = screenX / 4;
+        y = screenY - frameHeight - 60; // Position above the 60-pixel ground
     }
 
     public void update() {
-        velocityY += gravity;
-        y += velocityY;
-
-        if (y > screenY * 0.8f) {
-            y = screenY * 0.8f;
-            velocityY = 0;
-            isJumping = false;
-        }
-
-        // Update animation
+        // Update animation frame
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastFrameTime > frameDelay) {
-            frameIndex = (frameIndex + 1) % resources.getDogFrames().length;
+        if (currentTime - lastFrameTime > FRAME_DELAY) {
             lastFrameTime = currentTime;
+            if (isJumping) {
+                currentFrame = (currentFrame + 1) % JUMP_FRAMES;
+            } else {
+                currentFrame = (currentFrame + 1) % IDLE_FRAMES;
+            }
         }
 
-        // Move forward
-        x += speed;
+        // Update physics
+        if (isJumping) {
+            velocityY += gravity;
+            y += velocityY;
 
-        updateCollisionBox();
-    }
-
-    public void jump() {
-        if (!isJumping) {
-            velocityY = jumpForce;
-            isJumping = true;
+            // Check ground collision with bottom ground
+            float groundY = screenY - frameHeight - 60; // Ground is 60 pixels high at bottom
+            if (y >= groundY) {
+                y = groundY;
+                isJumping = false;
+                velocityY = 0;
+            }
         }
     }
 
     public void draw(Canvas canvas) {
-        Bitmap currentFrame = resources.getDogFrames()[frameIndex];
-        Rect srcRect = new Rect(0, 0, currentFrame.getWidth(), currentFrame.getHeight());
-        RectF destRect = new RectF(x, y, x + currentFrame.getWidth() * 0.5f, y + currentFrame.getHeight() * 0.5f);
-        canvas.drawBitmap(currentFrame, srcRect, destRect, null);
+        // Select current sprite sheet based on state
+        Bitmap currentSprite = isJumping ? jumpSprite : idleSprite;
+        int totalFrames = isJumping ? JUMP_FRAMES : IDLE_FRAMES;
+        int currentSpriteWidth = currentSprite.getWidth() / totalFrames;
+        
+        // Source rectangle for current frame
+        Rect srcRect = new Rect(
+            currentFrame * currentSpriteWidth,
+            0,
+            (currentFrame + 1) * currentSpriteWidth,
+            frameHeight
+        );
+        
+        // Destination rectangle for drawing
+        RectF destRect = new RectF(
+            x,
+            y,
+            x + frameWidth,
+            y + frameHeight
+        );
+        
+        canvas.drawBitmap(currentSprite, srcRect, destRect, null);
     }
 
-    private void updateCollisionBox() {
-        Bitmap currentFrame = resources.getDogFrames()[frameIndex];
-        float width = currentFrame.getWidth() * 0.5f;
-        float height = currentFrame.getHeight() * 0.5f;
-        collisionBox.set(x, y, x + width, y + height);
-    }
-
-    public RectF getCollisionBox() {
-        return collisionBox;
+    public void jump() {
+        if (!isJumping) {
+            isJumping = true;
+            velocityY = jumpForce;
+            currentFrame = 0; // Reset animation frame when starting jump
+        }
     }
 
     public float getX() {
@@ -95,5 +105,22 @@ public class Player {
 
     public float getY() {
         return y;
+    }
+
+    public int getWidth() {
+        return frameWidth;
+    }
+
+    public int getHeight() {
+        return frameHeight;
+    }
+
+    public RectF getCollisionBox() {
+        return new RectF(
+            x + frameWidth * 0.2f,  // 20% inset from left
+            y + frameHeight * 0.2f, // 20% inset from top
+            x + frameWidth * 0.8f,  // 20% inset from right
+            y + frameHeight * 0.8f  // 20% inset from bottom
+        );
     }
 }

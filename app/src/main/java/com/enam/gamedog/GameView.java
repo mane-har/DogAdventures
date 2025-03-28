@@ -1,7 +1,7 @@
 package com.enam.gamedog;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -11,9 +11,9 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
-public class GameView extends SurfaceView implements Runnable {
-    private Thread gameThread;
-    private volatile boolean isPlaying;
+public class GameView extends SurfaceView implements SurfaceHolder.Callback {
+    private GameThread thread;
+    private boolean isPlaying;
     private boolean isGameOver;
     private SurfaceHolder holder;
     private Paint paint;
@@ -22,29 +22,29 @@ public class GameView extends SurfaceView implements Runnable {
     private GameResources resources;
     private float backgroundX;
     private float backgroundScrollSpeed;
-    private float groundY;
+    private int currentLevel;
 
     // Game objects
     private Player player;
-    private Obstacle[] obstacles;
+    public static Obstacle[] obstacles;  // Keep static for now
     private Treat[] treats;
     private int score;
-    private int level;
     private int distanceToWin;
 
-    public GameView(Context context) {
+    public GameView(Context context, int level) {
         super(context);
         holder = getHolder();
+        holder.addCallback(this);
         paint = new Paint();
         screenX = getResources().getDisplayMetrics().widthPixels;
         screenY = getResources().getDisplayMetrics().heightPixels;
         screenRatioX = 1920f / screenX;
         screenRatioY = 1080f / screenY;
         resources = new GameResources(context);
+        currentLevel = level;
         backgroundX = 0;
-        backgroundScrollSpeed = 4f; // Increased speed
-        groundY = screenY * 0.8f;
-        distanceToWin = 1000; // Distance to reach to win
+        backgroundScrollSpeed = 4f;
+        distanceToWin = 1000;
 
         initGame();
     }
@@ -54,26 +54,55 @@ public class GameView extends SurfaceView implements Runnable {
         obstacles = new Obstacle[3];
         treats = new Treat[5];
 
+        // Initialize obstacles with spacing
         for (int i = 0; i < obstacles.length; i++) {
             obstacles[i] = new Obstacle(screenX, screenY, resources.getFenceBitmap());
+            if (i > 0) {
+                // Ensure minimum spacing between obstacles
+                obstacles[i].setX(obstacles[i-1].getX() + screenX);
+            }
         }
 
+        // Initialize treats
         for (int i = 0; i < treats.length; i++) {
             treats[i] = new Treat(screenX, screenY, resources.getBoneBitmap());
         }
 
         score = 0;
-        level = 1;
         isGameOver = false;
+        isPlaying = true;
         backgroundX = 0;
     }
 
-    private void update() {
-        if (!isGameOver) {
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        thread = new GameThread(holder, this);
+        thread.setRunning(true);
+        thread.start();
+    }
+
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+    }
+
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        boolean retry = true;
+        while (retry) {
+            try {
+                thread.setRunning(false);
+                thread.join();
+                retry = false;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void update() {
+        if (!isGameOver && isPlaying) {
             // Update background position
             backgroundX -= backgroundScrollSpeed;
-
-            // Reset background position when it scrolls off screen
             if (backgroundX <= -screenX) {
                 backgroundX = 0;
             }
@@ -85,6 +114,7 @@ public class GameView extends SurfaceView implements Runnable {
                 obstacle.update();
                 if (obstacle.isColliding(player)) {
                     isGameOver = true;
+                    break;
                 }
             }
 
@@ -96,19 +126,16 @@ public class GameView extends SurfaceView implements Runnable {
                     treat.reset();
                 }
             }
-
-            // Check if player reached the win distance
-            if (player.getX() >= distanceToWin) {
-                isGameOver = true;
-            }
         }
     }
 
-    private void draw() {
-        if (holder.getSurface().isValid()) {
-            Canvas canvas = holder.lockCanvas();
+    @SuppressLint("MissingSuperCall")
+    @Override
+    public void draw(Canvas canvas) {
+        if (canvas != null) {
+            canvas.drawColor(Color.WHITE);
 
-            // Draw scrolling background
+            // Draw background
             Rect srcRect = new Rect(0, 0, resources.getBackgroundBitmap().getWidth(),
                     resources.getBackgroundBitmap().getHeight());
             RectF destRect = new RectF(backgroundX, 0,
@@ -120,20 +147,9 @@ public class GameView extends SurfaceView implements Runnable {
             destRect.right = backgroundX + screenX * 2;
             canvas.drawBitmap(resources.getBackgroundBitmap(), srcRect, destRect, null);
 
-            // Draw ground platform
-            paint.setColor(Color.rgb(101, 67, 33));  // Dark brown for main platform
-            canvas.drawRect(0, groundY, screenX, groundY + 60, paint);
-
-            // Draw top edge of ground
-            paint.setColor(Color.rgb(139, 69, 19));  // Lighter brown for top edge
-            canvas.drawRect(0, groundY, screenX, groundY + 5, paint);
-
-            // Draw grass details
-            paint.setColor(Color.rgb(34, 139, 34));  // Forest green
-            float grassSpacing = 30;
-            for (float x = 0; x < screenX; x += grassSpacing) {
-                canvas.drawRect(x, groundY - 2, x + 4, groundY, paint);
-            }
+            // Draw ground at the very bottom of the screen
+            paint.setColor(Color.rgb(101, 67, 33));
+            canvas.drawRect(0, screenY - 60, screenX, screenY, paint);
 
             // Draw game objects
             player.draw(canvas);
@@ -146,76 +162,33 @@ public class GameView extends SurfaceView implements Runnable {
                 treat.draw(canvas);
             }
 
-            // Draw score and level
+            // Draw score
             paint.setColor(Color.WHITE);
             paint.setTextSize(50);
             paint.setShadowLayer(3, 3, 3, Color.BLACK);
             canvas.drawText("Score: " + score, 50, 100, paint);
-            canvas.drawText("Level: " + level, 50, 160, paint);
-
-            // Draw progress bar
-            float progress = player.getX() / distanceToWin;
-            paint.setColor(Color.GREEN);
-            canvas.drawRect(50, 200, 50 + (screenX - 100) * progress, 220, paint);
-            paint.setColor(Color.WHITE);
-            canvas.drawRect(50, 200, screenX - 50, 220, paint);
+            canvas.drawText("Level: " + currentLevel, 50, 160, paint);
 
             if (isGameOver) {
-                // Draw semi-transparent overlay for the whole screen
-                paint.setColor(Color.argb(180, 0, 0, 0));
-                canvas.drawRect(0, 0, screenX, screenY, paint);
-
-                // Draw dialog window
-                float windowWidth = screenX * 0.8f;
-                float windowHeight = screenY * 0.4f;
-                float windowX = (screenX - windowWidth) / 2;
-                float windowY = (screenY - windowHeight) / 2;
-
-                // Draw window background with border
-                paint.setColor(Color.rgb(48, 48, 48));  // Dark gray background
-                canvas.drawRect(windowX, windowY, windowX + windowWidth, windowY + windowHeight, paint);
-
-                // Draw border
-                paint.setColor(Color.rgb(200, 200, 200));  // Light gray border
-                paint.setStrokeWidth(4);
-                paint.setStyle(Paint.Style.STROKE);
-                canvas.drawRect(windowX + 2, windowY + 2, windowX + windowWidth - 2, windowY + windowHeight - 2, paint);
-                paint.setStyle(Paint.Style.FILL);
-
-                // Draw header bar
-                paint.setColor(Color.rgb(70, 70, 70));  // Slightly lighter gray for header
-                canvas.drawRect(windowX, windowY, windowX + windowWidth, windowY + 60, paint);
-
-                // Draw text
-                paint.setColor(Color.WHITE);
-                paint.setTextSize(60);
-                paint.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText("Game Over!", screenX / 2, windowY + 45, paint);
-
-                paint.setTextSize(50);
-                String message = player.getX() >= distanceToWin ? "You Win!" : "Try Again!";
-                canvas.drawText(message, screenX / 2, windowY + windowHeight/2, paint);
-
-                // Draw score
-                paint.setTextSize(40);
-                canvas.drawText("Final Score: " + score, screenX / 2, windowY + windowHeight/2 + 60, paint);
-
-                // Draw restart button
-                float buttonWidth = windowWidth * 0.6f;
-                float buttonHeight = 60;
-                float buttonX = (screenX - buttonWidth) / 2;
-                float buttonY = windowY + windowHeight - buttonHeight - 20;
-
-                paint.setColor(Color.rgb(76, 175, 80));  // Material Design green
-                canvas.drawRect(buttonX, buttonY, buttonX + buttonWidth, buttonY + buttonHeight, paint);
-
-                paint.setColor(Color.WHITE);
-                paint.setTextSize(40);
-                canvas.drawText("Tap to Restart", screenX / 2, buttonY + 42, paint);
+                drawGameOver(canvas);
             }
-
-            holder.unlockCanvasAndPost(canvas);
         }
+    }
+
+    private void drawGameOver(Canvas canvas) {
+        // Draw semi-transparent overlay
+        paint.setColor(Color.argb(180, 0, 0, 0));
+        canvas.drawRect(0, 0, screenX, screenY, paint);
+
+        // Draw game over text
+        paint.setColor(Color.WHITE);
+        paint.setTextSize(70);
+        paint.setTextAlign(Paint.Align.CENTER);
+        String message = player.getX() >= distanceToWin ? "Level Complete!" : "Game Over";
+        canvas.drawText(message, screenX/2, screenY/2 - 50, paint);
+        paint.setTextSize(50);
+        canvas.drawText("Score: " + score, screenX/2, screenY/2 + 50, paint);
+        canvas.drawText("Tap to Restart", screenX/2, screenY/2 + 150, paint);
     }
 
     @Override
@@ -232,18 +205,11 @@ public class GameView extends SurfaceView implements Runnable {
         return true;
     }
 
-    @Override
-    public void run() {
-        while (isPlaying) {
-            update();
-            draw();
-            sleep();
-        }
-    }
-
-    private void sleep() {
+    public void pause() {
+        isPlaying = false;
         try {
-            Thread.sleep(17); // Approximately 60 FPS
+            thread.setRunning(false);
+            thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -251,24 +217,8 @@ public class GameView extends SurfaceView implements Runnable {
 
     public void resume() {
         isPlaying = true;
-        gameThread = new Thread(this);
-        gameThread.start();
-    }
-
-    public void pause() {
-        isPlaying = false;
-        try {
-            gameThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void onDetachedFromWindow() {
-        super.onDetachedFromWindow();
-        if (resources != null) {
-            resources.recycle();
-        }
+        thread = new GameThread(holder, this);
+        thread.setRunning(true);
+        thread.start();
     }
 }

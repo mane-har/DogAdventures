@@ -2,52 +2,66 @@ package com.enam.gamedog;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Rect;
 import android.graphics.RectF;
 
 public class Obstacle {
-    private float x, y;
+    private float x;
+    private float y;
     private float speed;
-    private float screenX, screenY;
+    private int screenX, screenY;
     private Bitmap bitmap;
     private RectF collisionBox;
 
-    public Obstacle(float screenX, float screenY, Bitmap bitmap) {
+    public Obstacle(int screenX, int screenY, Bitmap bitmap) {
         this.screenX = screenX;
         this.screenY = screenY;
         this.bitmap = bitmap;
-        this.speed = 5f;
-        this.collisionBox = new RectF();
+        speed = 5f;
         reset();
     }
 
     public void reset() {
-        x = screenX + bitmap.getWidth();
-        y = screenY * 0.8f;
+        // Position fence at the right edge of screen
+        x = screenX + (float)(Math.random() * screenX * 0.5f);
+        // Position fence on the ground (60 pixels from bottom)
+        y = screenY - bitmap.getHeight() - 60;
         updateCollisionBox();
     }
 
     public void update() {
         x -= speed;
-        if (x < -bitmap.getWidth()) {
+        if (x + bitmap.getWidth() < 0) {
             reset();
         }
         updateCollisionBox();
     }
 
     public void draw(Canvas canvas) {
-        Rect srcRect = new Rect(0, 0, bitmap.getWidth(), bitmap.getHeight());
-        RectF destRect = new RectF(x, y, x + bitmap.getWidth() * 0.5f, y + bitmap.getHeight() * 0.5f);
-        canvas.drawBitmap(bitmap, srcRect, destRect, null);
+        canvas.drawBitmap(bitmap, x, y, null);
     }
 
     private void updateCollisionBox() {
-        float width = bitmap.getWidth() * 0.5f;
-        float height = bitmap.getHeight() * 0.5f;
-        collisionBox.set(x, y, x + width, y + height);
+        if (collisionBox == null) {
+            collisionBox = new RectF();
+        }
+        collisionBox.set(
+            x + bitmap.getWidth() * 0.1f,  // 10% inset from left
+            y,                             // No inset from top
+            x + bitmap.getWidth() * 0.9f,  // 10% inset from right
+            y + bitmap.getHeight()         // No inset from bottom
+        );
     }
 
     public boolean isColliding(Player player) {
         return RectF.intersects(collisionBox, player.getCollisionBox());
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+        updateCollisionBox();
     }
 }
