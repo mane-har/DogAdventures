@@ -1,7 +1,10 @@
 package com.enam.gamedog;
 
 import android.os.Bundle;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
@@ -12,16 +15,40 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Set fullscreen
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
 
-        // Get the level number from intent
         currentLevel = getIntent().getIntExtra("level", 1);
 
-        // Create and set the game view
         gameView = new GameView(this, currentLevel);
-        setContentView(gameView);
+
+        RelativeLayout layout = new RelativeLayout(this);
+        
+        layout.addView(gameView);
+
+        ImageButton backButton = new ImageButton(this);
+        backButton.setImageResource(R.drawable.arrow_left);
+        backButton.setBackgroundResource(android.R.color.transparent);
+        
+        RelativeLayout.LayoutParams buttonParams = new RelativeLayout.LayoutParams(
+            RelativeLayout.LayoutParams.WRAP_CONTENT,
+            RelativeLayout.LayoutParams.WRAP_CONTENT
+        );
+        buttonParams.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
+        buttonParams.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+        buttonParams.setMargins(16, 16, 16, 16);
+        
+        backButton.setLayoutParams(buttonParams);
+        backButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        
+        layout.addView(backButton);
+
+        setContentView(layout);
     }
 
     @Override
