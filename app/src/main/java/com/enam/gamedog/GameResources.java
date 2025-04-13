@@ -23,6 +23,7 @@ public class GameResources {
     private Bitmap keyBitmap;
     private Bitmap gameOverWindow;
     private Bitmap winWindow;
+    private Bitmap heartBitmap;
 
     public GameResources(Context context) {
         this.context = context;
@@ -118,6 +119,10 @@ public class GameResources {
         // Load key
         keyBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.key);
         keyBitmap = Bitmap.createScaledBitmap(keyBitmap, 100, 100, false);
+
+        //load sirt
+        heartBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.heart);
+        heartBitmap = Bitmap.createScaledBitmap(heartBitmap, 70, 70, false);
     }
 
     public Bitmap getBackgroundForLevel(int level) {

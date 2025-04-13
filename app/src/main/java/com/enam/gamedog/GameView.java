@@ -48,6 +48,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private int obstaclesPassed = 0;
     private int obstaclesUntilKey = 10;
     private boolean isGameWon = false;
+    private int playerHeart = 3;
 
     private boolean isTouchingScreen = false;
     private float playerMoveSpeed = 15f; // Speed at which player moves when touching screen
