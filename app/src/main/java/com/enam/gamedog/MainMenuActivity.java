@@ -46,13 +46,25 @@ public class MainMenuActivity extends AppCompatActivity {
                 videoView.setScaleY(scaleY);
             }
         });
+
         Button playButton = findViewById(R.id.playButton);
+        Button aboutButton = findViewById(R.id.aboutButton);
+
+
         playButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startActivity(new Intent(MainMenuActivity.this, LevelsActivity.class));
             }
-        });}
+        });
+
+    aboutButton.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent i = new Intent(MainMenuActivity.this, AboutActivity.class);
+            startActivity(i);
+        }
+    });}
 
         @Override
         protected void onResume() {

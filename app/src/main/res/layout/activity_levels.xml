@@ -2,7 +2,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="#000000">
+
+    <VideoView
+        android:id="@+id/videoView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <ImageButton
         android:id="@+id/backButton"
@@ -11,6 +21,7 @@
         android:src="@drawable/arrow_left"
         android:background="@android:color/transparent"
         android:layout_alignParentLeft="true"
+
         android:layout_alignParentTop="true"
         android:padding="16dp"
         android:contentDescription="Back button"/>
@@ -32,6 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="City World"
+                android:fontFamily="@font/fontpixelbold"
                 android:textSize="32sp"
                 android:textStyle="bold"
                 android:textColor="#FFD700"
@@ -75,6 +87,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Forest World"
+                android:fontFamily="@font/fontpixelbold"
                 android:textSize="32sp"
                 android:textStyle="bold"
                 android:textColor="#FFD700"
@@ -119,6 +132,7 @@
                 android:layout_height="wrap_content"
                 android:text="Park World"
                 android:textSize="32sp"
+                android:fontFamily="@font/fontpixelbold"
                 android:textStyle="bold"
                 android:textColor="#FFD700"
                 android:layout_marginBottom="16dp"/>

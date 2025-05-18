@@ -1,8 +1,11 @@
 package com.enam.gamedog;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -25,13 +28,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private float screenRatioX, screenRatioY;
     private GameResources resources;
     private float backgroundX;
-    private float gameSpeed = 12f;        // Increased from 8f for faster initial speed
-    private float maxGameSpeed = 25f;    // Increased from 20f for faster maximum speed
-    private float speedIncrease = 0.002f; // How much to increase speed over time
+    private float gameSpeed = 15f;        // Increased from 12f for faster initial speed
+    private float maxGameSpeed = 35f;    // Increased from 25f for faster maximum speed
+    private float speedIncrease = 0.003f; // Increased from 0.002f for faster progression
     private int currentLevel;
     private float playerDistance = 0;    // Track total distance
     private boolean isGamePaused = false;
-    private float speedIncreaseInterval = 1000f; // Increase speed every second
+    private float speedIncreaseInterval = 800f; // Decreased from 1000f to increase speed more frequently
 
     // Game objects
     private Player player;
@@ -40,15 +43,19 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private Key levelKey;
 
     private boolean isKeyVisible = false;
-    private float backgroundSpeed = 12f;  // Increased from 8f to match game speed
-    private float maxBackgroundSpeed = 25f;  // Increased from 20f to match max game speed
+    private float backgroundSpeed = 15f;  // Increased from 12f to match game speed
+    private float maxBackgroundSpeed = 35f;  // Increased from 25f to match max game speed
     private float backgroundSpeedIncreaseRate = 0.002f;
     private float lastSpeedIncreaseTime = 0;
     private float speedIncreaseRate = 0.002f;
     private int obstaclesPassed = 0;
-    private int obstaclesUntilKey = 10;
+    private int obstaclesUntilKey = 15;  // Increased from 10 to make game longer
     private boolean isGameWon = false;
-    private int playerHeart = 3;
+    private Bitmap heartBitmap;
+    private int playerHealth = 3; // starts with 3 hearts
+
+
+
 
     private boolean isTouchingScreen = false;
     private float playerMoveSpeed = 15f; // Speed at which player moves when touching screen
@@ -65,31 +72,33 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         resources = new GameResources(context);
         currentLevel = level;
         backgroundX = 0;
+        heartBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.heart); // make sure heart.png is in drawable
+
 
         initGame();
     }
 
     private void initGame() {
         player = new Player(screenX, screenY, resources);
-        obstacles = new Obstacle[3];
+        obstacles = new Obstacle[4];  // Increased from 3 to have more obstacles on screen
         treats = new Treat[5];
         levelKey = new Key(screenX, screenY, resources.getKeyBitmap());
         
         if (currentLevel == 3) {
-            gameSpeed = 18f;
-            maxGameSpeed = 32f;
-            backgroundSpeed = 18f;
-            maxBackgroundSpeed = 32f;
+            gameSpeed = 22f;  // Increased from 18f
+            maxGameSpeed = 40f;  // Increased from 32f
+            backgroundSpeed = 22f;
+            maxBackgroundSpeed = 40f;
         } else if (currentLevel == 2) {
-            gameSpeed = 16f;
-            maxGameSpeed = 30f;
-            backgroundSpeed = 16f;
-            maxBackgroundSpeed = 30f;
+            gameSpeed = 20f;  // Increased from 16f
+            maxGameSpeed = 38f;  // Increased from 30f
+            backgroundSpeed = 20f;
+            maxBackgroundSpeed = 38f;
         } else {
-            gameSpeed = 12f;
-            maxGameSpeed = 25f;
-            backgroundSpeed = 12f;
-            maxBackgroundSpeed = 25f;
+            gameSpeed = 15f;  // Increased from 12f
+            maxGameSpeed = 35f;  // Increased from 25f
+            backgroundSpeed = 15f;
+            maxBackgroundSpeed = 35f;
         }
         
         playerDistance = 0;
@@ -103,9 +112,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             if (i > 0) {
                 float randomSpacing;
                 if (Math.random() < 0.3) {
-                    randomSpacing = 400f + (float)(Math.random() * 200f);
+                    randomSpacing = 500f + (float)(Math.random() * 300f);  // Increased spacing
                 } else {
-                    randomSpacing = 800f + (float)(Math.random() * 400f);
+                    randomSpacing = 1000f + (float)(Math.random() * 500f);  // Increased spacing
                 }
                 obstacles[i].setPosition(obstacles[i-1].getX() + randomSpacing);
             }
@@ -180,7 +189,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                     
                     // Check collision
                     if (player.getCollisionBox().intersect(obstacles[i].getCollisionBox())) {
-                        gameOver();
+                        takeDamage();
+                        // Move the obstacle off screen after collision
+                        obstacles[i].setPosition(-obstacles[i].getWidth());
                         return;
                     }
 
@@ -306,6 +317,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             paint.setShadowLayer(3, 3, 3, Color.BLACK);
             canvas.drawText("Level: " + currentLevel, 50, 160, paint);
 
+            // Draw hearts
+            for (int i = 0; i < playerHealth; i++) {
+                canvas.drawBitmap(heartBitmap, 20 + i * (heartBitmap.getWidth() + 10), 20, null);
+            }
+
             if (isGameOver) {
                 drawGameOver(canvas);
             } else if (isGameWon) {
@@ -408,13 +424,20 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void resetGame() {
-        if (isGameWon) {
-            // Start next level
-            currentLevel++;
-            initGame();
-        } else {
-            // Restart current level
-            initGame();
+        playerHealth = 3; // Reset health when starting new game
+        isGameOver = false;
+        isPlaying = true;
+        initGame();
+    }
+
+    private void takeDamage() {
+        if (!isGameOver) {
+            playerHealth--;
+
+            if (playerHealth <= 0) {
+                playerHealth = 0;
+                gameOver();
+            }
         }
     }
 }
