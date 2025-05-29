@@ -7,12 +7,13 @@
 
     <VideoView
         android:id="@+id/videoView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="-100dp" />
 
     <ImageButton
         android:id="@+id/backButton"
@@ -46,7 +47,7 @@
                 android:fontFamily="@font/fontpixelbold"
                 android:textSize="32sp"
                 android:textStyle="bold"
-                android:textColor="#FFD700"
+                android:textColor="#000000"
                 android:layout_marginBottom="16dp"/>
 
             <LinearLayout
@@ -90,7 +91,7 @@
                 android:fontFamily="@font/fontpixelbold"
                 android:textSize="32sp"
                 android:textStyle="bold"
-                android:textColor="#FFD700"
+                android:textColor="#000000"
                 android:layout_marginBottom="16dp"/>
 
             <LinearLayout
@@ -134,7 +135,7 @@
                 android:textSize="32sp"
                 android:fontFamily="@font/fontpixelbold"
                 android:textStyle="bold"
-                android:textColor="#FFD700"
+                android:textColor="#000000"
                 android:layout_marginBottom="16dp"/>
 
             <LinearLayout

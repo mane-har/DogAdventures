@@ -5,71 +5,43 @@ import android.graphics.Canvas;
 import android.graphics.RectF;
 
 public class Obstacle {
-    private float x;
-    private float y;
-    private float speed;
-    private int screenX, screenY;
-    private Bitmap sprite;
-    private RectF collisionBox;
-    private static final float INITIAL_SPACING = 800f; // Space between fences at start
-    private static final float MIN_SPACING = 500f; // Minimum space between fences as game speeds up
+    private float x, y;
+    private float width, height;
+    private Bitmap bitmap;
+    private boolean isTopGround;
     private boolean shouldReset = true;
 
-    public Obstacle(int screenX, int screenY, Bitmap sprite) {
-        this.screenX = screenX;
-        this.screenY = screenY;
-        this.sprite = sprite;
-        this.speed = 0;
-        reset();
+    public Obstacle(int screenX, int screenY, Bitmap bitmap) {
+        this.bitmap = bitmap;
+        this.width = bitmap.getWidth();
+        this.height = bitmap.getHeight();
+        this.x = screenX;
+        this.y = screenY - height - 60; // Default position for bottom ground
     }
 
-    public void reset() {
-        // Position fence just off the right side of screen
-        x = screenX + 100;
-        // Position fence on the ground
-        y = screenY - sprite.getHeight() - 60;
-        updateCollisionBox();
+    public void update(float speed) {
+        x -= speed;
     }
 
-    public void update(float gameSpeed) {
-        if (x + sprite.getWidth() < 0) {
-            if (shouldReset) {
-                x = screenX + 100;
-            }
-            return;
+    public void draw(Canvas canvas) {
+        if (bitmap != null) {
+            canvas.drawBitmap(bitmap, x, y, null);
         }
-        x -= gameSpeed;
-        updateCollisionBox();
     }
 
     public void setPosition(float x) {
         this.x = x;
-        updateCollisionBox();
     }
 
-    public void draw(Canvas canvas) {
-        canvas.drawBitmap(sprite, x, y, null);
-    }
-
-    private void updateCollisionBox() {
-        if (collisionBox == null) {
-            collisionBox = new RectF();
+    public void setTopGround(boolean isTopGround) {
+        this.isTopGround = isTopGround;
+        if (isTopGround) {
+            // Position for top ground (2% of screen height)
+            this.y = 20; // Keep top ground position the same
+        } else {
+            // Position for bottom ground
+            this.y = 920; // Lowered from 900 to 920 for bottom ground
         }
-        // Make collision box slightly smaller than the sprite for better gameplay
-        collisionBox.set(
-            x + sprite.getWidth() * 0.2f,   // 20% inset from left
-            y + sprite.getHeight() * 0.2f,  // 20% inset from top
-            x + sprite.getWidth() * 0.8f,   // 20% inset from right
-            y + sprite.getHeight() * 0.8f   // 20% inset from bottom
-        );
-    }
-
-    public boolean isColliding(Player player) {
-        return RectF.intersects(collisionBox, player.getCollisionBox());
-    }
-
-    public RectF getCollisionBox() {
-        return collisionBox;
     }
 
     public float getX() {
@@ -81,14 +53,22 @@ public class Obstacle {
     }
 
     public float getWidth() {
-        return sprite.getWidth();
+        return width;
     }
 
     public float getHeight() {
-        return sprite.getHeight();
+        return height;
+    }
+
+    public RectF getCollisionBox() {
+        return new RectF(x, y, x + width, y + height);
     }
 
     public void setShouldReset(boolean shouldReset) {
         this.shouldReset = shouldReset;
+    }
+
+    public boolean shouldReset() {
+        return shouldReset;
     }
 }

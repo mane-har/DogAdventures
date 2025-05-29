@@ -35,13 +35,16 @@ public class LevelsActivity extends AppCompatActivity {
                 float scaleY = 1f;
 
                 if (videoRatio > screenRatio) {
-                    scaleY = videoRatio / screenRatio;
-                } else {
                     scaleX = screenRatio / videoRatio;
+                } else {
+                    scaleY = videoRatio / screenRatio;
                 }
 
+                // Center the video
                 videoView.setScaleX(scaleX);
                 videoView.setScaleY(scaleY);
+                videoView.setTranslationX((videoView.getWidth() - videoView.getWidth() * scaleX) / 2);
+                videoView.setTranslationY((videoView.getHeight() - videoView.getHeight() * scaleY) / 2);
             }
         });
 

@@ -7,11 +7,14 @@
     <!-- Play Button -->
     <ImageButton
         android:id="@+id/playButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerInParent="true"
+        android:layout_width="300dp"
+        android:layout_height="300dp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"
         android:background="@null"
         android:src="@drawable/play_btn"
+        android:scaleType="fitCenter"
         android:contentDescription="Play button"/>
 
 </RelativeLayout>

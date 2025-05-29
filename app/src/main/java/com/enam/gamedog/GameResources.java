@@ -16,6 +16,9 @@ public class GameResources {
     private Bitmap backgroundBitmap;
     private Bitmap secondLevelBackground;
     private Bitmap thirdLevelBackground;
+    private Bitmap fourthLevelBackground;
+    private Bitmap fifthLevelBackground;
+    private Bitmap sixthLevelBackground;
     private Bitmap dogIdleSprite;
     private Bitmap dogJumpSprite;
     private Bitmap fenceBitmap;
@@ -58,6 +61,33 @@ public class GameResources {
             false
         );
 
+        // Load level 4 background
+        fourthLevelBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.second_w_first);
+        fourthLevelBackground = Bitmap.createScaledBitmap(
+            fourthLevelBackground,
+            context.getResources().getDisplayMetrics().widthPixels,
+            context.getResources().getDisplayMetrics().heightPixels,
+            false
+        );
+
+        // Load level 5 background
+        fifthLevelBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.second_w_second);
+        fifthLevelBackground = Bitmap.createScaledBitmap(
+            fifthLevelBackground,
+            context.getResources().getDisplayMetrics().widthPixels,
+            context.getResources().getDisplayMetrics().heightPixels,
+            false
+        );
+
+        // Load level 6 background
+        sixthLevelBackground = BitmapFactory.decodeResource(context.getResources(), R.drawable.second_w_third);
+        sixthLevelBackground = Bitmap.createScaledBitmap(
+            sixthLevelBackground,
+            context.getResources().getDisplayMetrics().widthPixels,
+            context.getResources().getDisplayMetrics().heightPixels,
+            false
+        );
+
         // Load window for game over and win screens
         Bitmap windowBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.window);
         
@@ -83,8 +113,8 @@ public class GameResources {
         dogIdleSprite = BitmapFactory.decodeResource(context.getResources(), R.drawable.dog_idle);
         dogJumpSprite = BitmapFactory.decodeResource(context.getResources(), R.drawable.dog_jump);
 
-        // Scale dog sprites - make them larger (1/5 of screen height)
-        int targetHeight = context.getResources().getDisplayMetrics().heightPixels / 5;
+        // Scale dog sprites - make them larger (1/4 of screen height for better quality)
+        int targetHeight = context.getResources().getDisplayMetrics().heightPixels / 4;
         float scale = (float) targetHeight / dogIdleSprite.getHeight();
         
         dogIdleSprite = Bitmap.createScaledBitmap(
@@ -103,35 +133,43 @@ public class GameResources {
 
         // Load and scale fence - make it proportional to dog height
         fenceBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.fence);
-        int fenceHeight = (int)(targetHeight * 0.5f); // Fence is 50% of dog height (increased from 40%)
+        int fenceHeight = (int)(targetHeight * 0.4f); // Reduced from 0.6f to 0.4f (40% of dog height)
         float fenceScale = (float) fenceHeight / fenceBitmap.getHeight();
         fenceBitmap = Bitmap.createScaledBitmap(
             fenceBitmap,
-            (int)(fenceBitmap.getWidth() * fenceScale * 0.45f), // Slightly wider fence
+            (int)(fenceBitmap.getWidth() * fenceScale * 0.9f), // Reduced from 0.5f to 0.4f for narrower fence
             fenceHeight,
             true
         );
 
-        // Load bone
+        // Load bone with better quality
         boneBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.bone);
-        boneBitmap = Bitmap.createScaledBitmap(boneBitmap, 80, 80, false);
+        boneBitmap = Bitmap.createScaledBitmap(boneBitmap, 100, 100, true); // Increased size and using true for better quality
 
-        // Load key
+        // Load key with better quality
         keyBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.key);
-        keyBitmap = Bitmap.createScaledBitmap(keyBitmap, 100, 100, false);
+        keyBitmap = Bitmap.createScaledBitmap(keyBitmap, 120, 120, true); // Increased size and using true for better quality
 
-        //load sirt
+        // Load heart with better quality
         heartBitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.heart);
-        heartBitmap = Bitmap.createScaledBitmap(heartBitmap, 70, 70, false);
+        heartBitmap = Bitmap.createScaledBitmap(heartBitmap, 80, 80, true); // Increased size and using true for better quality
     }
 
     public Bitmap getBackgroundForLevel(int level) {
-        if (level == 2) {
-            return secondLevelBackground;
-        } else if (level == 3) {
-            return thirdLevelBackground;
+        switch (level) {
+            case 2:
+                return secondLevelBackground;
+            case 3:
+                return thirdLevelBackground;
+            case 4:
+                return fourthLevelBackground;
+            case 5:
+                return fifthLevelBackground;
+            case 6:
+                return sixthLevelBackground;
+            default:
+                return backgroundBitmap;
         }
-        return backgroundBitmap;
     }
 
     public Bitmap getBackgroundBitmap() {
@@ -170,6 +208,9 @@ public class GameResources {
         if (backgroundBitmap != null) backgroundBitmap.recycle();
         if (secondLevelBackground != null) secondLevelBackground.recycle();
         if (thirdLevelBackground != null) thirdLevelBackground.recycle();
+        if (fourthLevelBackground != null) fourthLevelBackground.recycle();
+        if (fifthLevelBackground != null) fifthLevelBackground.recycle();
+        if (sixthLevelBackground != null) sixthLevelBackground.recycle();
         if (dogIdleSprite != null) dogIdleSprite.recycle();
         if (dogJumpSprite != null) dogJumpSprite.recycle();
         if (fenceBitmap != null) fenceBitmap.recycle();
