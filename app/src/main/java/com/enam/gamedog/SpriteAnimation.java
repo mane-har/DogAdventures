@@ -20,7 +20,7 @@ public class SpriteAnimation {
         this.frameHeight = frameHeight;
         this.frameCount = frameCount;
         this.currentFrame = 0;
-        this.frameTime = 1000 / fps; // Convert fps to milliseconds
+        this.frameTime = 1000 / fps;
         this.lastFrameTime = System.currentTimeMillis();
         this.isPlaying = true;
     }

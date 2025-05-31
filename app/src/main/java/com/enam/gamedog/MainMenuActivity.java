@@ -19,22 +19,23 @@ public class MainMenuActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_menu);
-
         videoView = findViewById(R.id.videoView);
         Uri videoUri = Uri.parse("android.resource://" + getPackageName() + "/" + R.raw.sky_anim);
         videoView.setVideoURI(videoUri);
         videoView.start();
+
 
         videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(MediaPlayer mp) {
                 mp.setLooping(true);
 
-                // Scale video to fill screen (center crop behavior)
+
                 float videoRatio = (float) mp.getVideoWidth() / mp.getVideoHeight();
                 float screenRatio = (float) videoView.getWidth() / videoView.getHeight();
                 float scaleX = 1f;
                 float scaleY = 1f;
+
 
                 if (videoRatio > screenRatio) {
                     scaleY = videoRatio / screenRatio;
@@ -42,10 +43,12 @@ public class MainMenuActivity extends AppCompatActivity {
                     scaleX = screenRatio / videoRatio;
                 }
 
+
                 videoView.setScaleX(scaleX);
                 videoView.setScaleY(scaleY);
             }
         });
+
 
         Button playButton = findViewById(R.id.playButton);
         Button aboutButton = findViewById(R.id.aboutButton);
@@ -69,12 +72,12 @@ public class MainMenuActivity extends AppCompatActivity {
         @Override
         protected void onResume() {
             super.onResume();
-            videoView.start(); // resume video if user returns
+            videoView.start();
         }
 
         @Override
         protected void onPause() {
             super.onPause();
-            videoView.pause(); // pause video when leaving activity
+            videoView.pause();
         }
     }

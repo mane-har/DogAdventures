@@ -23,9 +23,8 @@ public class Treat {
     }
 
     public void reset() {
-        // Position treat just off the right side of screen
+
         x = screenX + 100;
-        // Position treat at a height that requires a jump
         y = screenY - sprite.getHeight() - 150;
         isActive = true;
         updateCollisionBox();
@@ -36,8 +35,7 @@ public class Treat {
         
         this.speed = gameSpeed;
         x -= speed;
-        
-        // If treat goes off screen, reset it
+
         if (x < -sprite.getWidth()) {
             reset();
         }
@@ -55,12 +53,11 @@ public class Treat {
         if (collisionBox == null) {
             collisionBox = new RectF();
         }
-        // Make collision box slightly smaller than the sprite for better gameplay
         collisionBox.set(
-            x + sprite.getWidth() * 0.2f,   // 20% inset from left
-            y + sprite.getHeight() * 0.2f,  // 20% inset from top
-            x + sprite.getWidth() * 0.8f,   // 20% inset from right
-            y + sprite.getHeight() * 0.8f   // 20% inset from bottom
+            x + sprite.getWidth() * 0.2f,
+            y + sprite.getHeight() * 0.2f,
+            x + sprite.getWidth() * 0.8f,
+            y + sprite.getHeight() * 0.8f
         );
     }
 

@@ -16,7 +16,7 @@ public class Obstacle {
         this.width = bitmap.getWidth();
         this.height = bitmap.getHeight();
         this.x = screenX;
-        this.y = screenY - height - 60; // Default position for bottom ground
+        this.y = screenY - height - 60;
     }
 
     public void update(float speed) {
@@ -36,11 +36,11 @@ public class Obstacle {
     public void setTopGround(boolean isTopGround) {
         this.isTopGround = isTopGround;
         if (isTopGround) {
-            // Position for top ground (2% of screen height)
-            this.y = 20; // Keep top ground position the same
+
+            this.y = 20;
         } else {
-            // Position for bottom ground
-            this.y = 920; // Lowered from 900 to 920 for bottom ground
+
+            this.y = 920;
         }
     }
 

@@ -13,8 +13,9 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="About Game Dog"
-            android:textSize="32sp"
+            android:text="LosTail"
+            android:textSize="40sp"
+            android:fontFamily="@font/fontpixelbold"
             android:textStyle="bold"
             android:textColor="@color/text_color"
             android:layout_gravity="center"
@@ -25,8 +26,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textSize="18sp"
+            android:fontFamily="@font/fontpixelbold"
             android:textColor="@color/text_color"
-            android:lineSpacingExtra="8dp"/>
+            android:lineSpacingExtra="8dp"
+            android:text="LosTail is a 2D adventure game that tells the heartfelt story of Buddy, a small black-and-white dog lost far from home. As Buddy, you'll travel through cities, forests, and parks, facing challenges and exploring the world in search of the one place that matters most — home.\n\nWith simple controls, a touching atmosphere, and a journey full of hope, LosTail is a game about loyalty, love, and never giving up — no matter how far away you are.\n\nJoin Buddy on this emotional journey and help him find his way back to where he truly belongs."/>
 
     </LinearLayout>
 </ScrollView> 

@@ -13,35 +13,38 @@ public class Player {
     private boolean isJumping;
     private boolean isTopGround;
     private float jumpVelocity;
-    private float gravity = 0.8f;        // Single gravity declaration
+    private float gravity = 0.8f;
     private float groundY;
     private float topGroundY;
     private float screenY;
     private float velocityY;
     private float velocityX;
-    private float jumpForce = -4f;      // Reduced from -8f for much lower jump
+    private float jumpForce = -4f;
     private float jumpAcceleration = 0.1f;
-    private float maxJumpSpeed = 2f;    // Reduced from 4f for lower maximum jump speed
-    private float switchSpeed = 0.2f;  // Reduced from 0.5f for slower switching
-    private boolean isSwitching = false;  // Track if player is switching grounds
-    private float switchProgress = 0f;    // Progress of switching animation
-    private float targetY;                // Target Y position for switching
+    private float maxJumpSpeed = 2f;
+    private float switchSpeed = 0.2f;
+    private boolean isSwitching = false;
+    private float switchProgress = 0f;
+    private float targetY;
     private int screenX;
     private Bitmap idleSprite;
     private Bitmap jumpSprite;
     private RectF collisionBox;
-    private boolean isOnTopGround = false;  // New variable to track which ground we're on
-    private float bottomGroundY;            // Y position of bottom ground
-    private boolean isFlipped = false;      // Track if player is flipped
+    private boolean isOnTopGround = false;
+    private float bottomGroundY;
+    private boolean isFlipped = false;
     
     // Animation variables
     private int currentFrame = 0;
     private long lastFrameTime = 0;
-    private static final int FRAME_DELAY = 100; // milliseconds between frames
-    private static final int IDLE_FRAMES = 4;   // Number of frames in idle animation
-    private static final int JUMP_FRAMES = 6;   // Number of frames in jump animation
-    private int frameWidth;    // Width of a single frame
-    private int frameHeight;   // Height of a single frame
+    private static final int FRAME_DELAY = 100;
+    private static final int IDLE_FRAMES = 4;
+    private static final int JUMP_FRAMES = 6;
+    private int frameWidth;
+    private int frameHeight;
+
+    private boolean isMovingForward = false;
+    private float moveForwardSpeed = 15f;
 
     public Player(int screenX, int screenY, GameResources resources) {
         this.screenX = screenX;
@@ -51,9 +54,9 @@ public class Player {
         this.frameWidth = idleSprite.getWidth() / IDLE_FRAMES;
         this.frameHeight = idleSprite.getHeight();
         this.x = 100;
-        this.bottomGroundY = 760;  // Made even higher for bottom ground
-        this.topGroundY = 20;      // Lowered from 0 to 20 for top ground
-        this.y = bottomGroundY;    // Start on bottom ground
+        this.bottomGroundY = 760;
+        this.topGroundY = 20;
+        this.y = bottomGroundY;
         this.isJumping = false;
         this.isTopGround = false;
         this.jumpVelocity = 0;
@@ -78,7 +81,7 @@ public class Player {
             y += jumpVelocity;
             jumpVelocity += gravity;
 
-            // Check if landed on ground
+
             if (y >= (isTopGround ? topGroundY : bottomGroundY)) {
                 y = isTopGround ? topGroundY : bottomGroundY;
                 isJumping = false;
@@ -86,7 +89,7 @@ public class Player {
             }
         }
 
-        // Update animation frame
+
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastFrameTime > FRAME_DELAY) {
             lastFrameTime = currentTime;
@@ -97,11 +100,11 @@ public class Player {
             }
         }
 
-        // Handle ground switching animation
+
         if (isSwitching) {
             switchProgress += switchSpeed;
             if (switchProgress >= 1f) {
-                // Switch complete
+
                 isSwitching = false;
                 switchProgress = 0f;
                 y = targetY;
@@ -109,17 +112,17 @@ public class Player {
                 isFlipped = !isFlipped;
                 gravity = -gravity;
             } else {
-                // Interpolate position during switch
+
                 float startY = isOnTopGround ? topGroundY : bottomGroundY;
                 float endY = isOnTopGround ? bottomGroundY : topGroundY;
                 y = startY + (endY - startY) * switchProgress;
             }
         } else {
-            // Normal gravity and movement
+
             velocityY += gravity;
             y += velocityY;
 
-            // Ground collision
+
             if (isOnTopGround) {
                 if (y < topGroundY) {
                     y = topGroundY;
@@ -137,8 +140,10 @@ public class Player {
             }
         }
 
-        // Keep x position fixed
-        x = screenX / 6;
+
+        if (!isMovingForward) {
+            x = screenX / 6;
+        }
 
         updateCollisionBox();
     }
@@ -146,45 +151,45 @@ public class Player {
     public void jump() {
         if (!isJumping) {
             isJumping = true;
-            jumpVelocity = -20;
+            jumpVelocity = -25;
             currentFrame = 0;
         }
     }
 
     public void switchGround() {
-        if (!isJumping && !isSwitching) {  // Only allow switching when not jumping or already switching
+        if (!isJumping && !isSwitching) {
             isSwitching = true;
             switchProgress = 0f;
             targetY = isOnTopGround ? bottomGroundY : topGroundY;
-            velocityY = 0;  // Stop any current movement
+            velocityY = 0;
         }
     }
 
     public void draw(Canvas canvas) {
-        // Select current sprite sheet based on state
+
         Bitmap currentSprite = isJumping ? jumpSprite : idleSprite;
         int totalFrames = isJumping ? JUMP_FRAMES : IDLE_FRAMES;
         
-        // Calculate the width of one frame in current sprite sheet
+
         int currentSpriteWidth = currentSprite.getWidth() / totalFrames;
         
-        // Source rectangle for current frame in sprite sheet
+
         Rect srcRect = new Rect(
-            currentFrame * currentSpriteWidth,  // Left of current frame
-            0,                                  // Top of sprite
-            (currentFrame + 1) * currentSpriteWidth,  // Right of current frame
-            frameHeight                         // Bottom of sprite
+            currentFrame * currentSpriteWidth,
+            0,
+            (currentFrame + 1) * currentSpriteWidth,
+            frameHeight
         );
         
-        // Destination rectangle for drawing the frame
+
         RectF destRect = new RectF(
-            x,                  // Left
-            y,                  // Top
-            x + frameWidth,     // Right
-            y + frameHeight     // Bottom
+            x,
+            y,
+            x + frameWidth,
+            y + frameHeight
         );
         
-        // Apply flip if needed
+
         if (isFlipped) {
             canvas.save();
             canvas.scale(1, -1, x + frameWidth/2, y + frameHeight/2);
@@ -199,22 +204,22 @@ public class Player {
         if (collisionBox == null) {
             collisionBox = new RectF();
         }
-        // Make collision box more accurate and slightly smaller
-        float widthInset = frameWidth * 0.15f;   // Reduced from 0.2f for more accurate width
-        float heightInset = frameHeight * 0.15f; // Reduced from 0.2f for more accurate height
+
+        float widthInset = frameWidth * 0.15f;
+        float heightInset = frameHeight * 0.15f;
         
-        // Adjust collision box based on jumping state
+
         if (isJumping) {
-            // Make collision box slightly smaller during jumps for better gameplay
+
             widthInset = frameWidth * 0.2f;
             heightInset = frameHeight * 0.25f;
         }
         
         collisionBox.set(
-            x + widthInset,           // Left
-            y + heightInset,          // Top
-            x + frameWidth - widthInset,  // Right
-            y + frameHeight - heightInset // Bottom
+            x + widthInset,
+            y + heightInset,
+            x + frameWidth - widthInset,
+            y + frameHeight - heightInset
         );
     }
 
@@ -241,5 +246,15 @@ public class Player {
     public void setX(float x) {
         this.x = x;
         updateCollisionBox();
+    }
+
+    public void startMovingForward() {
+        isMovingForward = true;
+    }
+
+    public void updateForwardMovement() {
+        if (isMovingForward) {
+            x += moveForwardSpeed;
+        }
     }
 }

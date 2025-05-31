@@ -22,12 +22,12 @@ public class Owner extends GameObject {
     }
 
     public void update() {
-        // Owner stays in place, just update position if needed
+
     }
 
     public void draw(Canvas canvas, Paint paint) {
 
-        paint.setColor(Color.rgb(70, 130, 180)); // Steel blue color
+        paint.setColor(Color.rgb(70, 130, 180));
         canvas.drawRect(x, y - height, x + width, y, paint);
 
 

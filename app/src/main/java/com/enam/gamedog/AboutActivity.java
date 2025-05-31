@@ -11,12 +11,13 @@ public class AboutActivity extends AppCompatActivity {
         setContentView(R.layout.activity_about);
 
         TextView aboutText = findViewById(R.id.aboutText);
-        aboutText.setText("Game Dog is an exciting platformer game where you control a dog through various levels.\n\n" +
+        aboutText.setText("LosTail is a 2D adventure game that tells the heartfelt story of Buddy, a small black-and-white dog lost far from home. As Buddy, you'll travel through cities and forests, facing challenges and exploring the world in search of the one place that matters most — home.\n\n" +
                 "Features:\n" +
-                "• 9 exciting levels across 3 different worlds\n" +
-                "• City, Forest, and Park environments\n" +
+                "• 6 exciting levels across 2 different worlds\n" +
+                "• City and Forest environments\n" +
                 "• Collect treats and avoid obstacles\n" +
                 "• Simple one-touch controls\n\n" +
-                "Enjoy the adventure!");
+                "With simple controls, a touching atmosphere, and a journey full of hope, LosTail is a game about loyalty, love, and never giving up — no matter how far away you are.\n\n" +
+                "Join Buddy on this emotional journey and help him find his way back to where he truly belongs.");
     }
 } 
